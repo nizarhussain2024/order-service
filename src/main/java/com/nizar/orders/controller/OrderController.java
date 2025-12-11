@@ -30,9 +30,23 @@ public class OrderController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Order>> getAllOrders() {
-        List<Order> orders = orderService.getAllOrders();
-        return ResponseEntity.ok(orders);
+    public ResponseEntity<Map<String, Object>> getAllOrders(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String customerId) {
+        
+        List<Order> orders = orderService.getOrders(page, size, status, customerId);
+        long total = orderService.getTotalOrders();
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("content", orders);
+        response.put("page", page);
+        response.put("size", size);
+        response.put("total", total);
+        response.put("totalPages", (int) Math.ceil((double) total / size));
+        
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
