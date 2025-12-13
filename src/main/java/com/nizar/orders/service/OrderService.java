@@ -1,6 +1,8 @@
 package com.nizar.orders.service;
 
 import com.nizar.orders.model.Order;
+import com.nizar.orders.validator.OrderValidator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -8,10 +10,14 @@ import java.util.stream.Collectors;
 
 @Service
 public class OrderService {
+    @Autowired
+    private OrderValidator validator;
+    
     private final Map<String, Order> orders = new HashMap<>();
     private long orderIdCounter = 1;
 
     public Order createOrder(Order order) {
+        validator.validateOrder(order);
         order.setId("ORD-" + orderIdCounter++);
         order.setStatus("PENDING");
         orders.put(order.getId(), order);
@@ -44,6 +50,9 @@ public class OrderService {
     }
 
     public Order updateOrderStatus(String id, String status) {
+        if (!validator.isValidStatus(status)) {
+            throw new IllegalArgumentException("Invalid order status: " + status);
+        }
         Order order = orders.get(id);
         if (order != null) {
             order.setStatus(status);
